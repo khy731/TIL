@@ -250,4 +250,4 @@ $(document).ready(function() {
 
 ## 최종 결과물을 Live Server로 확인
 
-![Honeycam 2022-03-28 19-02-35.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4210bd03-c400-4109-9fc0-02f23b8163e4/Honeycam_2022-03-28_19-02-35.gif)
+![Honeycam 2022-03-28 19-02-35](https://user-images.githubusercontent.com/97890886/160375935-92183da6-bcdb-493a-9720-25bb39efb3de.gif)

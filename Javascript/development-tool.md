@@ -152,7 +152,7 @@ node_modules
 
 # 프로젝트 루트 설정
 
-![project-roote.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c4afa88b-b479-4a3a-ba32-2e1d6cb3f4a3/project-roote.png)
+![project-roote](https://user-images.githubusercontent.com/97890886/160607661-6225090d-2073-4214-a0f9-b42e8389dbb5.png)
 
 - 서버(노드) 쪽 코드 : TEST/es6
 - 클라이언트(브라우저) 쪽 코드 : TEST/public/es6

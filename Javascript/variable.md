@@ -153,7 +153,7 @@ currentRoom = conference_room_a;    // Error! conference_room_a 라는 식별자
 
 let과 var 전부 변수를 뜻하고, const는 상수이다.
 
-### var
+## var
 
 ```jsx
 var name = 'bathingape'
@@ -165,7 +165,7 @@ console.log(name) // javascript
 
 선언을 이미 했는데도 불구하고, 다시 선언했을 때 에러가 뜨지 않고 다른 값을 가졌다. 좋게 말하면 유연하지만, 나쁘게 말하면 혼란이다.
 
-### let
+## let
 
 ```jsx
 let name = 'bathingape'
@@ -180,7 +180,7 @@ console.log(name) //react
 
 선언을 이미 한 경우 다시 선언하려고 할 때 에러가 난다. 당연하지만, 불변 값(상수)이 아니므로 다른 값을 할당할 수 있다. 선언을 다시 할 때 에러가 날 뿐이다.
 
-### const
+## const
 
 ```jsx
 const name = 'bathingape'

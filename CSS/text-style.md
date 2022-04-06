@@ -150,3 +150,206 @@ h1 {
     font-family: 'font1', cursive;
 }
 ```
+
+# 글자 색 지정
+
+> color 속성
+
+color에서 사용할 수 있는 속성값은 16진수와 rgb(또는 rgba), hsl(또는 hsla) 등이 있다.
+
+1. 16진수 : 6자리의 16진수로 RGB의 비율을 표시. 
+
+       ex) #RRGGBB → #ffff00
+
+2. hsl (hue색상 saturation채도 lightness명도 + alpha불투명도) : 원 모양 색상환을 기준으로 각각의 요소를 표시
+
+       ex) hsla(0,100%, 50%, 0.5) → 절반쯤 투명해진 빨간색 
+
+3. 영문명 : white, black 등
+
+4. rgb로 표시 : 0~255까지 각각 R,G,B가 들어 있는 양 만큼의 값 표시. CSS에서 주로 사용됨.
+
+    ```css
+    h1 { color : rgb(0,0,255); }
+    ```
+
+## TIP: **text-align 속성**
+
+`text-align` 속성은 텍스트의 정렬 방향을 의미한다.
+
+- `left`: 왼쪽 정렬
+- `right`: 오른쪽 정렬
+- `center`: 중앙 정렬
+- `justify`: 양쪽 정렬 (자동 줄바꿈시 오른쪽 경계선 부분 정리)
+
+# 줄 간격 조절
+
+> line-height 속성
+>
+
+```css
+p {
+            font-size: 12px; line-height: 24px;
+        }
+p {
+            font-size: 12px; line-height: 2.0;
+        }
+p {
+            font-size: 12px; line-height: 200%;
+        }
+```
+
+1. 정확한 단위로 크깃값을 지정
+
+글자 크기는 12px, 줄 간격은 24px (==글자 크기의 2배)
+
+2. 문단의 글자 크기를 기준으로 몇 배수인지 실수, 백분율로 지정
+
+글자 크기는 12px, 줄 간격은 글자 크기의 2.0배 / 글자 크기의 200% (== 24px)
+
+> 제목의 세로 정렬에 유용
+
+제목에 사용할 스타일 시트를 작성하면서 .heading이라는 클래스를 만들고, 그 내에 있는 제목 영역의 높이 height 속성을 100px로 했을 때 line-height 속성도 100px로 해주면 편안하게 중앙정렬된다.
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>HMTL</title>
+    <style>
+        .heading {
+            height: 100px;
+            width: 100%;
+            background: chartreuse;
+            color: deeppink;
+            text-align: center;
+            line-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="heading">HTML</h1>
+</body>
+</html>
+```
+
+![7_font_height2](https://user-images.githubusercontent.com/97890886/161969997-c33a160b-b8f5-46db-8fc8-01057471be9d.png)
+
+line-height 속성을 사용하지 않았을 때
+
+
+![7_font_height3](https://user-images.githubusercontent.com/97890886/161970042-84008bcd-0a64-485d-9939-8d7100c41dc2.png)
+
+
+line-height 속성을 사용했을 때
+
+# 텍스트 밑줄, 윗줄, 취소선
+
+>text-decoration 속성
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>text-decoration</title>
+</head>
+<body>
+    <h1>text-decoration 속성</h1>
+    <p style="text-decoration: none;">none</p>
+    <p style="text-decoration: underline;">underline</p>
+    <p style="text-decoration: overline;">overline</p>
+    <p style="text-decoration: line-through;">line-through</p>
+
+    <p style="text-decoration: solid;">solid</p>
+    <p style="text-decoration: dashed;">dashed</p>
+    <p style="text-decoration: dotted;">dotted</p>
+    <p style="text-decoration: blueviolet;">color</p>
+</body>
+</html>
+```
+
+- none : 텍스트에 줄을 표시하지 않음 (하이퍼링크 같은 기본으로 줄이 생기는 요소에 사용하면 좋다)
+- underline : 밑줄
+- overline : 윗줄
+- line-through : 취소선
+
+
+![8_text-decoraition](https://user-images.githubusercontent.com/97890886/161970094-3a4321ca-50de-4eb8-879c-02b953fc54e8.png)
+
+
+## 텍스트에 그림자 효과 추가
+
+>text-shadow 속성
+
+```css
+text-shadow: none | <가로 거리> <세로 거리> <번짐 정도> <색상>
+```
+
+- 가로 거리 : 필수 속성.
+
+    - 양숫값 :오른쪽에 그림자를 만든다.
+
+    - 음숫값 - 왼쪽에 그림자를 만든다.
+
+- 세로 거리 : 필수 속성.
+
+    - 양숫값 : 아래쪽에 그림자를 만든다.
+
+    - 음숫값 : 위쪽에 그림자를 만든다.
+
+- 번짐 정도 : 그림자가 번지는 정도. 기본값==0
+
+    - 양숫값 : 그림자가 모든 방향으로 퍼져 나가므로 그림자가 크게 표시됨
+
+    - 음숫값 : 그림자가 모든 방향으로 축소되어 보임
+
+- 색상 : 그림자 색상 지정. 한 가지만 지정할 수 있고, 공백으로 구분하여 여러 색상을 지정할 수도 있음. 기본값==현재 글자의 색
+
+```css
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>text-shadow</title>
+    <style>
+        .shadow1 {
+            color: red;
+            text-shadow: 2px 2px black;
+        }
+        .shadow2 {
+            color: black;
+            text-shadow: 4px 4px 3px rgb(192, 148, 4) ;
+        }
+        .shadow3 {
+            color: rgb(99, 147, 189);
+            text-shadow: 7px -7px 20px violet;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="shadow1">HTML</h1>
+    <h1 class="shadow2">CSS</h1>
+    <h1 class="shadow3">javascript</h1>
+</body>
+</html>
+```
+
+
+![9_textShadow](https://user-images.githubusercontent.com/97890886/161970179-b0b71854-1519-4d66-bb88-984a044f915d.png)
+
+# 텍스트의 대소문자 변환
+
+> text-transform 속성
+
+- none : 줄을 표시하지 않음
+- capitalize : 첫 번째 글자를 대문자로 변환
+- uppercase : 모든 글자를 대문자로 변환
+- lowercase : 모든 글자를 소문자로 변환
+- full-width : 가능한 모든 문자를 전각 문자(가로세로 비율 1:1로 같은 문자. 1:2와 같은 늘씬한 글씨는 반각문자이다.)로 변환
+
+# 글자 간격 조절
+
+> letter-spacing, word-spacing 속성
+
+글자와 글자 사이의 간격을 조절한다. word-spacing 속성은 단어와 단어 사이의 간격을 조절하는데,  CSS 에서는 letter-spacing을 주로 사용하여 자간(글자와 글자 사이의 간격. 글꼴이나 글자의 크기 등에 상관없이 정적인 개념이다)을 조절한다. px,em같은 단위나 %로 크깃값을 조절한다.

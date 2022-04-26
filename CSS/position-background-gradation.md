@@ -280,3 +280,137 @@ box model에 padding이나 border가 있다면, 배경 이미지를 어디까지
 ```
 
 ![17_background](https://user-images.githubusercontent.com/97890886/165299708-4e7c84f6-6ec8-4973-a144-ccac9e13891a.png)
+
+# 그라데이션 효과로 배경 꾸미기
+
+## 선형 그라데이션 : linear-gradient
+
+색상이 수직, 수평, 대각선 방향으로 일정하게 변하는 그라데이션이다(일반적인 그라데이션이라고 한다면 대부분은 이걸 말한다.) 
+
+```css
+background: linear-gradient(to <방향> or <각도>, <색상 중지점>, [<색상 중지점>, ...])
+```
+
+### 방향
+
+- 끝 지점을 기준으로, to 예약어와 함께 사용
+- 최대 2개까지 사용 가능
+- 수평 : left, right / 수직 : top, bottom (대각선의 경우 left top과 깉이 표시). 기본값은 to bottom
+
+### 각도
+
+- deg로 표시
+
+### 색상 중지점 color stop
+
+만약 2번 이상 색을 변하게 하려면, 그러니까 2색 이상으로 선형 그라데이션을 만드려면 색상이 바뀌는 포인트를 지정해 줘야 한다. 시작 색상 → 중지점 위치+중간 색상 → 끝 색상 이런 식으로 해주면 된다.
+
+```css
+background: linear-gradient(to right, blue, white 30%, aqua 60%, black)
+```
+
+## 원형 그라데이션
+
+타원의 중심에서부터 동심원을 그리며 바깥 방향으로 색상이 바뀌는 구조이기 때문에 원의 중심과 크기를 지정하고 그라데이션의 모양을 선택한다.
+
+```css
+background: radial-gradient(<모양>, <크기> at <위치>, <색상 중지점>, <색상 중지점>...)
+```
+
+### 모양
+
+- circle : 원형
+- ellipse : 타원형. 기본값
+
+### 크기
+
+원형 그라데이션의 크기를 지정한다. 키워드값을 쓴다.
+
+- closest-side : 가장 가까운 요소의 측면에 닿을 때까지. 타원형이라면 그라데이션 중심을 기준으로.
+- closest-corner : 가장 가까운 요소의 코너에 닿을 때까지
+- farthest-side : 가장 먼 요소의 측면에 닿을 때까지. 타원형이라면 그라데이션 중심을 기준으로.
+- farthest-corner : 가장 먼 요소의 코너에 닿을 때까지. 기본값
+
+### 위치
+
+- 키워드 : left, right, top, bottom
+- 가상의 점 백분율 : 20% 30% 면 순서대로 x축 y축처럼.
+
+### 색상 중지점
+
+역시 색상 + 백분율로 표시해주면 된다.
+
+## 그라데이션 반복 패턴
+
+선형의 경우 : repeating-linear-gradient
+
+원형의 경우 : repeating-radial-gradient
+
+예쁜 모양을 만들기 위해서는 그라데이션끼리 만나는 부분이 자연스러워야 한다→ 각 색상 중지점의 위치를 적당히 조절해야만(== 시작 색상과 끝 색상을 명확히 구분해 줘야만) 중간에 어중간하게 색이 섞이지 않는다.
+
+- yellow, red 20px : 노란색으로 시작, 20px부분까지 빨간색    ( X )
+- yellow, yellow 20px, red 20px, red 40px : 노란색으로 시작, 20px부분까지 노란색, 20px부분까지 빨간색, 40px부분까지 빨간색    ( O )
+
+yellow 20px과 red 20px 표현으로 명확해졌다.
+
+```css
+* {
+    box-sizing: border-box;    
+}
+#container {
+    width: 1200px;
+    margin: 0 auto;
+}
+.grad {
+    margin: 30px;
+    float: left;
+    width: 300px;
+    height: 200px;
+    border: 2px solid black;
+}
+#lineargrad1 {
+    background: linear-gradient(to left top, lightpink, brown);
+}
+#lineargrad2 {
+    background: linear-gradient(45deg, lightgreen, olive);
+}
+#lineargrad3 {
+    background: linear-gradient(to right, blue, white 30%, aqua 60%, black)
+}
+#radialgrad4 {
+    background: radial-gradient(circle closest-side at 30% 30%, white, darkorange );
+}
+#radialgrad5 {
+    background: radial-gradient(lightyellow, yellow 30%, deeppink 60%);
+}
+#gradpattern1 {
+    background: repeating-linear-gradient(white, white 20px, violet 20px, violet 40px);
+}
+#gradpattern2 {
+    background: repeating-radial-gradient(white, white 30%, darkviolet 30%, darkviolet 60%);
+}
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>gradient</title>
+    <link rel="stylesheet" href="gradient.css">
+</head>
+<body>
+    <div id="container">
+        <div class="grad" id="lineargrad1"></div>
+        <div class="grad" id="lineargrad2"></div>
+        <div class="grad" id="lineargrad3"></div>
+        <div class="grad" id="radialgrad4"></div>
+        <div class="grad" id="radialgrad5"></div>
+        <div class="grad" id="gradpattern1"></div>
+        <div class="grad" id="gradpattern2"></div>
+    </div>
+</body>
+</html>
+```
+
+![18_gradient](https://user-images.githubusercontent.com/97890886/165300214-c741c7e1-d8fe-40a1-ad16-2691ab6e36ad.png)

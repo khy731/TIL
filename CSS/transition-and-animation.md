@@ -183,3 +183,53 @@ transition-timing-function: linear | ease | ease-in | ease-out | cubic-bezier(n,
 ```
 
 ![Honeycam 2022-03-20 19-57-08](https://user-images.githubusercontent.com/97890886/165881462-20ed13cf-424d-4e48-92bd-1dae137cace0.gif)
+
+# CSS animation
+
+animation 속성은 특정 지점에서 스타일을 바꾸면서 애니메이션을 만드는데, 이렇게 중간에 스타일이 바뀌는 지점을 키프레임 keyframe 이라고 한다. 이는 @keyframes 로 정의하고, animation 속성과 그 하위 속성을 이용해 실행 시간, 반복 여부 등을 지정한다.
+
+## @keyframes, animation-name 속성
+
+@keyframes로 애니메이션의 지점(시작과 끝), 상태가 바뀌는 부분 등을 지정한다. 
+
+```css
+@keyframes 이름 {
+    선택자 {
+        스타일
+    }
+}
+```
+
+@keyframes 속성의 ‘선택자’는 스타일 전환 포인트이다. 즉 스타일 속성값이 바뀌는 지점을 가리키는 것이다. 예를 들어, 애니메이션의 중간 부분에 스타일을 추가하고 싶다면 시작을 0% 끝을 100%로 놓고 50%위치에 키프레임을 추가한다. 시작과 끝만 사용하려면 %게이지 대신 from(시작)과 to(끝)만 사용해도 된다.
+
+```css
+animation-name: 이름 | none
+```
+
+웹 문서에선 애니메이션을 여러 개 정의할 수 있으므로 각 애니메이션에 이름을 붙여 이를 구분한다. animation-name 속성을 사용한다.
+
+## animation-duration 속성
+
+애니메이션을 재생할 시간 지정. s나 ms같은 시간 단위를 사용 가능하다.
+
+## animation-direction 속성
+
+애니메이션의 방향 지정. 기본적으로 from→to 순으로 진행되나, 이를 왜곡할 수 있다.
+
+- normal : from→to. 기본값
+- reverse : to→from.
+- alternate : 홀수번째는 normal, 짝수번째는 reverse로.
+- altaernate-reverse : 짝수번째는 normal, 홀수번째는 reverse로.
+
+## animation-iteraction-count 속성
+
+- 반복 횟수
+- infinite
+
+## animation-timing-function 속성
+
+트랜지션과 마찬가지로 애니메이션의 시작,중간,끝에서 속도를 지정하여 전체 속도 곡선을 만들 수 있다.
+
+## animation 속성으로 한꺼번에 표기하기
+
+주의 : animation-duration 속성을 반드시 표기하라.

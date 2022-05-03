@@ -251,5 +251,34 @@ forEach 메서드도 내부적으로는 for문을 통해 배열을 순회하지�
 
 ### 기타 특징
 
-- forEach 메서드는 for문과 달리 break나 continue 문을 사용할 수 없다. (배열의 모든 요소를 빠짐없이 계속해서 순회해야만 한다.) 희소 배열일 경우 ‘빈 요소’는 순회 대상에서 제외된다.
-- forEach 메서드는 for문에 비해 성능은 별로지만 **가독성이 좋다**. 따라서 엄청나게 스케일이 큰 배열이 아니라면 forEach 메서드를 사용하는 것이 더 좋다.
+- forEach 메서드는 for문과 달리 break나 continue 문을 사용할 수 없다. (배열의 모든 요소를 빠짐없이 계속해서 순회해야만 한다.)
+
+```jsx
+// break문 사용 불가
+[1,2,3].forEach(item => {
+    console.log(item);
+    if (item > 1) break;    // SyntaxError: Illegal break statement
+})
+
+// continue 문 사용 불가
+[1,2,3].forEach(item => {
+    console.log(item);
+    if (item > 1) continue;    // SyntaxError: Illegal continue statement: no surrounding iteration statement
+})
+```
+
+- 희소 배열일 경우 ‘빈 요소’는 순회 대상에서 제외된다.
+
+```jsx
+// forEach 메서드는 (희소 배열의 경우)존재하지 않는 요소를 순회 대상에서 제외한다
+
+const arr = [1, ,2]
+
+for (var i = 0; i < arr.length; i++) {
+    console.log(arr[i]);    // 1, undefined, 2
+}
+
+arr.forEach(item => console.log(item));    // 1,2
+```
+
+forEach 메서드는 for문에 비해 성능은 별로지만 **가독성이 좋다**. 따라서 엄청나게 스케일이 큰 배열이 아니라면 forEach 메서드를 사용하는 것이 더 좋다.

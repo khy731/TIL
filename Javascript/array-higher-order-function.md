@@ -282,3 +282,133 @@ arr.forEach(item => console.log(item));    // 1,2
 ```
 
 forEach 메서드는 for문에 비해 성능은 별로지만 **가독성이 좋다**. 따라서 엄청나게 스케일이 큰 배열이 아니라면 forEach 메서드를 사용하는 것이 더 좋다.
+
+## Array.prototype.map
+
+> 자신을 호출한 배열의 모든 요소를 순회하면서 인수로 전달받은 콜백 함수를 반복 호출하여 **콜백 함수의 반환값들로 구성된 `새로운 배열`을 반환**한다. **원본 배열은 변경되지 않는다.**
+> 
+
+```jsx
+const numbers = [1,4,7,12,44];
+
+// 콜백 함수의 반환값들로 구성된 새로운 배열을 반환
+const roots = numbers.map(item => item * item);
+console.log(roots);    // [ 1, 16, 49, 144, 1936 ]
+
+// 원본 배열을 변경하지 않는다
+console.log(numbers);   // [ 1, 4, 7, 12, 44 ]
+```
+
+![map](https://user-images.githubusercontent.com/97890886/166671194-38f438e8-df5b-41fa-88b9-b49d7087cb82.png)
+
+
+**map 메서드를 호출한 배열의 length 프로퍼티 값은 map 메서드가 생성하여 반환하는 배열의 length 프로퍼티 값과 같다. (1:1 mapping의 산물)**
+
+### 콜백 함수에 인수 전달하기
+
+map 메서드의 콜백 함수는 map 메서드를 호출한 배열의 `요소값`, `인덱스`, `this`를 순차적으로 전달받을 수 있다. (매개변수를 세 개 갖는다)
+
+```jsx
+[`a`,10,-1].map((item,index,arr) => {
+    console.log(`요소값: ${item}, 인덱스: ${index}, this:${JSON.stringify(arr)}`);
+    return item;    // forEach와는 다르게 반환값이 있음
+})
+
+/* 요소값: a, 인덱스: 0, this:["a",10,-1]
+요소값: 10, 인덱스: 1, this:["a",10,-1]
+요소값: -1, 인덱스: 2, this:["a",10,-1] */
+```
+
+### 콜백 함수 내부의 this 지정하기
+
+```jsx
+class Prefix {
+    constructor(value) {
+        this.value = value;
+    }
+   
+    add(arr) {
+        // this를 지정해 주지 않는 경우 이 내부의 this는 undefined
+        return arr.map(function(item) {
+            return this.value +`-`+ item;
+        }, this);
+    }
+}
+
+const prerix = new Prefix(`webkit`);
+const result = prerix.add([`user`, `select`]);
+console.log(result);    // [ 'webkit-user', 'webkit-select' ]
+```
+
+물론 화살표 함수를 쓰는 것이 베스트이긴 하다.
+
+### forEach VS map?
+
+- 공통점 : 둘 다 자신을 호출한 배열의 모든 요소를 순회하면서 인수로 전달받은 콜백 함수를 호출
+- 차이점 :
+    - forEach의 반환값은 항상 undefined이다 → 단순히 반복문 로직을 대체하기 위한 고차 함수
+    - map은 콜백 함수의 반환값들로 구성된 새로운 배열을 반환한다 → 요소값을 다른 값으로 mapping한 `새로운 배열을 생성`하기 위한 고차 함수
+    
+
+## Array.prototype.filter
+
+> 자신을 호출한 배열의 모든 요소를 순회하면서 인수로 전달받은 콜백 함수를 반복 호출하되, **콜백 함수의 반환값이 `true`인 요소로만 구성된 새로운 배열**을 반환한다. **원본 배열은 변경되지 않는다.**
+> 
+
+콜백 함수에 인수 전달하기, 콜백 함수 내부의 this 지정하기는 위 2개와 겹치므로 패스하겠다.
+
+```jsx
+const numbers = [1,2,3,4,5];
+
+// item을 2로 나눈 나머지를 반환하는 콜백 함수
+// 홀수의 경우 1이 반환됨 -> 1은 true 취급 -> 홀수만 필터링됨
+const odds = numbers.filter(item => item % 2);
+console.log(odds);    // [ 1, 3, 5 ]
+```
+
+![filter](https://user-images.githubusercontent.com/97890886/166671241-d85a11d3-099f-496e-a25a-30711c732f4e.png)
+
+
+filter 메서드가 생성하여 반환한 새로운 배열의 length 프로퍼티 값은 filter 메서드를 호출한 배열의 length 프로퍼티 값과 `같거나` `작다`.
+
+### 자신을 호출한 배열에서 특정 요소 제거하기
+
+filter은 forEach, map 메서드와 마찬가지로 동작하지만 forEach는 단순 로직(반환값x), map은 결과를 반환, filter은 말 그대로 필터처럼 작동한다-true값만 반환한다-. 즉 조건을 걸어 그 조건에 맞는 것만 걸러낼 수 있다는 소리다-반대로 말하면 조건에 맞지 않는 것을 제거할 수 있다-.
+
+```jsx
+class User {
+    constructor() {
+        this.users = [
+            {id : 1, name : `kang`},
+            {id : 2, name : `lee`},
+            {id : 3, name : `nya`}
+        ];
+    }
+
+    // 전달받은 id에 맞는 요소 추출
+    findId(id) {
+        // id가 일치하는 경우(true)만 반환
+        return this.users.filter(u => u.id === id)
+    }
+
+    // 전달받은 id를 제거후 남은 요소 추출
+    removeId(id) {
+        // id가 불일치하는 경우(true) = 그 id 빼고 = 그 id를 제거하고 반환
+        this.users = this.users.filter(u => u.id !== id)
+        return this.users;
+    }
+}
+
+const user = new User();
+
+let me = user.findId(1);
+console.log(me);    // [ { id: 1, name: 'kang' } ]
+
+me = user.removeId(3);
+console.log(me);    // [ { id: 1, name: 'kang' }, { id: 2, name: 'lee' } ]
+```
+
+filter 메서드로 특정 요소를 제거할 경우, **중복된 모든 요소가 제거**된다. 하나만 제거하려면
+
+1. index0f 메서드로 특정 요소의 인덱스를 먼저 취득한 후
+2. splice 메서드를 사용

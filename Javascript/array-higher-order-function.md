@@ -412,3 +412,214 @@ filter 메서드로 특정 요소를 제거할 경우, **중복된 모든 요소
 
 1. index0f 메서드로 특정 요소의 인덱스를 먼저 취득한 후
 2. splice 메서드를 사용
+
+## Array.prototype.reduce
+
+> 자신을 호출한 배열의 모든 요소를 순회하며 인수로 전달받은 콜백 함수를 반복 호출하고, 콜백 함수의 반환값을 다음 순회 시에 콜백 함수의 첫 번째 인수로 전달하면서 결과적으로 **하나의 결과값**을 만들어 반환한다.
+> 
+
+```jsx
+// reduce 메서드
+// 첫 번째 매개변수 : 콜백 함수
+// 두 번째 매개변수 : 초깃값 (초깃값이 주어지지 않은 경우 배열의 첫 요소와 둘 요소를 동시에 데려옴)
+
+// 콜백 함수
+// 첫 번째 매개변수 : 초깃값 / 이전 반환값
+// 두 번째 매개변수 : reduce 메서드를 호출한 배열의 요소값
+// 세 번째 매개변수 : 인덱스
+// 네 번째 매개변수 : 배열 자체(this)
+
+const sum = [1,2,3,4].reduce((accumulator,currentValue)=>accumulator+currentValue, 0);
+
+console.log(sum);
+```
+
+내부 작동을 자세히 서술하면 대충 다음과 같다.
+
+1. 초깃값과 배열의 첫 번째 요소값(인덱스0)을 콜백 함수에게 인수로 전달하면서 호출
+2. 1의 반환값과 배열의 두 번째 요소값(인덱스1)을 콜백 함수에게 인수로 전달하면서 호
+
+![reduce](https://user-images.githubusercontent.com/97890886/167278583-f22f0fec-f921-40f5-bbd2-65ebbdf620f0.png)
+
+결과적으로 하나의 결과값을 반환한다. → 자신을 호출한 배열의 모든 요소를 순회하며 하나의 결과값을 구해야 할 때 사용한다.
+
+> 모든 배열의 고차 함수(map, filter, every, find 등)는 reduce로 구현할 수 있다.
+> 
+
+### 평균 구하기
+
+```jsx
+// 평균 구하기
+// 마지막 순회일 경우 누적값의 평균 반환, 아닐 경우 누적값 반환
+const values = [1,2,3,4,5,6]
+const avg = values.reduce((acc,cur,i,{length}) => {
+    return i === length - 1 ? (acc+cur) / length : acc+cur; 
+})
+```
+
+### 최댓값 구하기
+
+```jsx
+// 최대값 구하기
+const max = values.reduce((acc,cur) => acc>cur ? acc : cur);
+// Math.max 메서드를 권장
+```
+
+### 요소의 중복 횟수 구하기
+
+```jsx
+// 요소의 중복 횟수 구하기
+const obj = [`apple`, `banana`, `rice`, `apple`,`apple`, `rice`];
+const count = obj.reduce((acc,cur) => {
+    // 첫 번째 순회 : 초깃값(acc)은 빈 객체 {} 현 요소(cur)는 `apple`
+    // 빈 객체 {}에 cur이 프로퍼티 키로 동적 할당 {apple: }
+    // apple 프로퍼티는 아직 존재하지 않으므로 undefined(false) -> 단축 표현에 의해 0됨 => +1로 초기화됨
+    // 결과적으로 {apple : 1}이 됨
+    
+    // 네 번째 순회 : 초깃값(acc)은 {apple:1, banana:1, rice:1}, 현 요소(cur)은 `apple`
+    // apple 프로퍼티가 존재(1, true) -> 단축 표현에 의해 1+1로 2됨
+    // 결과적으로 {apple:2, banana:1, rice:1} 이 됨
+    return count = acc[cur] = (acc[cur] || 0) + 1
+}, {});
+```
+
+### 중첩 배열 평탄화
+
+```jsx
+// 중첩 배열 평탄화
+// concat은 요소가 배열일 경우 해체하여 추가한다
+const flatten = values.reduce((acc, cur) => acc.concat(cur), []);
+// flat 메서드를 권장
+```
+
+### 중복 요소 제거하기
+
+```jsx
+// 중복 요소 제거
+// 배열 자체의 인덱스와 순회중인 요소의 인덱스가 같으면 -> 처음 순회하는 중복X 값 : 누산기 unnique에 추가
+// 이런식으로 unique(초깃값 [])에 처음 순회하는 값만 담아 반환
+const result = values.reduce((unique, val, i, _values) => {
+    _values.indexOf(val) === i ? [...unique, val] : unique
+}, []);
+
+// filter 메서드를 권장
+const result2 = values.filter((val, i, _values) => _values.indexOf(val) ===i);
+
+// Set(중복되지 않는 유일한 값들의 집합) 사용을 권장
+const result3 = [...new Set(values)];
+```
+
+> reduce 메서드의 초깃값(둘째 인수)은 생략 가능하지만, `생략하지 않고 전달`하는 것을 권장한다
+> 
+
+```jsx
+// 초깃값 생략
+const sum = [].reduce((acc,cur) => acc+cur);
+console.log(sum);   // TypeError: Reduce of empty array with no initial value
+
+// 초깃값 생략하지 않고 전달
+const sum2 = [].reduce((acc,cur) => acc+cur, 0);
+console.log(sum2);  // 0
+```
+
+```jsx
+// 객체의 특정 프로퍼티 값을 합산
+const products = [
+    {id: 1, price: 100,},
+    {id: 2, price: 200,},
+    {id: 3, price: 300,},
+];
+
+const priceSum = products.reduce((acc, cur) => acc.price + cur.price);
+// 첫 번째 순회 : acc는 {id: 1, price: 100,}, cur은 {id: 2, price: 200,}
+// 두 번째 순회 : acc는 300, cur은 {id: 3, price: 300,}
+// 두 번째 순회에서 acc가 숫자 값이기 때문에 . 연산자로 접근이 불가능 - undefined
+
+console.log(priceSum);    // NaN
+
+const priceSum2 = products.reduce((acc, cur) => acc + cur.price, 0);
+// 첫 번째 순회 : acc는 0, cur은 {id: 1, price: 100,}
+// 두 번째 순회 : acc는 100, cur은 {id: 2, price: 200,}
+// 세 번째 순회 : acc는 300, cur은 {id: 3, price: 300,}
+
+console.log(priceSum2);    // 600
+
+// 즉, 아다리가 맞게 해 줘라
+```
+
+## Array.prototype.some
+
+> 자신을 호출한 배열의 요소를 순회하면서 인수로 전달된 콜백 함수를 호출하되, 콜백 함수는 `조건`이 정의되어 있으며 이 조건을 만족하는 요소가 하나라도 있으면(반환값이 한 번이라도 `true`면) `true`를 반환한다.
+> 
+
+forEach, map, filter와 마찬가지로 콜백 함수는 요소값, 인덱스, this를 인수로 받는다.
+
+```jsx
+const arr = [1,5,17,-200,50];
+const obj = [`kang`, `lee`, `kim`];
+const data = [
+    {id:1, pass:0000},
+    {id:2, pass:0001},
+    {id:3, pass:0002},
+]
+
+// 배열의 요소 중 10보다 큰 요소가 1개 이상 존재하는지 확인
+console.log(arr.some(item => item>10));    // t
+
+// 배열의 요소 중 `kang`이 1개 이상 존재하는지 확인
+console.log(obj.some(item => item === `kang`));    // t
+
+// 배열의 요소 중 특정 프로퍼티 값이 존재하는지 확인
+console.log(data.some(item => item.pass === 0000));    // t
+
+// 빈 배열에게 호출됐을 경우 언제나 false
+console.log([].some(item => item %2));    // f
+```
+
+OR과 같은 원리네
+
+## Array.prototype.every
+
+> 콜백 함수의 반환값이 모두 참이어야만 `true`를 반환한다. 빈 배열일 경우 언제나 true임에 주의하라.
+> 
+
+## Array.prototype.find
+
+ES6 도입
+
+> 콜백 함수의 반환값이 `true인 첫 번째 요소`를 반환한다.
+> 
+
+filter 메서드는 true인 요소만 추출하여 새로운 **배열**을 만들어 반환하지만, find는 단 하나의 요소값만을 반환한다. 즉 filter의 return값은 언제나 배열이고 find는 값이다.
+
+## Array.prototype.findIndex
+
+ES6 도입
+
+> 콜백 함수의 반환값이 true인 첫 번째 요소의 `인덱스`를 반환한다
+> 
+
+## Array.prorotype.flatMap
+
+Es10 도입
+
+> map 매서드를 통해 생성된 새로운 배열을 평탄화한다. (map과 flat을 순차적으로 실행한것과 동일효과)
+> 
+
+단, flat 메서드처럼 인수를 전달하여 평탄화의 깊이를 지정할 수는 없고 한 단계만 평탄화 한다.
+
+```jsx
+const arr = [`Hello`, `World`];
+
+// map만 실행 : 배열 내 배열 생김(고차원)
+console.log(arr.map(x => x.split(``)));
+// [ [ 'H', 'e', 'l', 'l', 'o' ], [ 'W', 'o', 'r', 'l', 'd' ] ]
+
+// map과 flat을 순차적으로 실행
+console.log(arr.map(x => x.split(``)).flat());
+// ['H', 'e', 'l', 'l', 'o', 'W', 'o', 'r','l', 'd']
+
+// flatMap 실행
+console.log(arr.flatMap(item => item.split(``)));
+// ['H', 'e', 'l', 'l', 'o', 'W', 'o', 'r','l', 'd']
+```

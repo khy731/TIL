@@ -1250,3 +1250,275 @@ oldChlid 노드는 DOM에서 제거된다.
 </script>
 </html>
 ```
+
+# 어트리뷰트
+
+## 어트리뷰트 노드
+
+HTML 요소는 여러 개의 속성(attribute, 어트리뷰트)으로 요소 동작을 제어한다.
+
+<aside>
+💡 어트리뷰트 이름 = “어트리뷰트 값”
+
+</aside>
+
+HTML 문서가 파싱될 때 어트리뷰트는 각각 하나의 어트리뷰트 노드로 변환되어 요소 노드와 연결되며, 이에 대한 참조는 NameNodeMap 객체(유사 배열 객체이자 이터러블)에 담겨 요소 노드의 attributes 프로퍼티에 저장된다.
+
+### attributes 프로퍼티
+
+![attribute PNG](https://user-images.githubusercontent.com/97890886/170477189-86cfe43a-0d25-4d64-b25e-870396a14acc.png)
+
+
+요소 노드의 모든 어트리뷰트 노드의 참조가 담긴 NamedNodeMap 객체를 반환하는 read only(setter 없음 getter만 존재) 접근자 프로퍼티.
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>Attribute</title>
+</head>
+<body>
+    <input id="user" type="text" value="answer">
+</body>
+<script>
+    const $input = document.getElementById(`user`);
+    const {attributes} = $input;
+
+    console.log(attributes.id.value);
+    console.log(attributes.type.value);
+    console.log(attributes.value.value);
+</script>
+</html>
+```
+
+![attribute2](https://user-images.githubusercontent.com/97890886/170477208-62f5fc35-5c93-45e0-be5d-a01054b2abd1.png)
+
+
+attributes.id.value 처럼 사용하면 어트리뷰트 값을 취득할 수 있긴 하다. 다만 이 프로퍼티로 뭔가를 하기에는 너무 복잡하고 불편한데…
+
+## HTML 어트리뷰터 조작
+
+> Element.prototype.getAttribute/setAttribute 메서드
+> 
+
+attributes 프로퍼티를 통하지 않고도 요소 노드에서 **직접** HTML 어트리뷰트 값을 취득 및 변경할 수 있다.
+
+- 어트리뷰트 값 참조 : getAttribute
+- 어트리뷰트 값 변경 : setAttribute
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>Attribute</title>
+</head>
+<body>
+    <input id="user" type="text" value="answer">
+</body>
+<script>
+    const $input = document.getElementById(`user`);
+
+    // 어트리뷰트 값 취득
+    const inputTypeValue = $input.getAttribute(`value`);
+    console.log(inputTypeValue);    // answer
+    
+    // 어트리뷰트 값 변경
+    $input.setAttribute(`type`,`button`);   // 버튼으로 바뀜
+
+    // 특정 어트리뷰트가 존재하는지 확인하고
+    // 존재할 시 삭제
+    if ($input.hasAttribute(`value`)) $input.removeAttribute(`value`);
+</script>   
+</html>
+```
+
+## HTML 어트리뷰트와 DOM 프로퍼티
+
+요소 노드는 상태(state)를 가지고 있으며, HTML 어트리뷰트로 지정한 `초기 상태`와 사용자 입력에 의해 변경된 `최신 상태`를 둘 다 관리해야 한다.
+
+```jsx
+<input id="user" type="text" value="answer">
+```
+
+- 위 예시에서 input 요소의 value 어트리뷰트는 input 요소가 렌더링되면 입력 필드에 표시될 `초깃값`을 지정하는 역할을 한다. 이는 `어트리뷰트 노드`로 변환되어 요소 노드의 attributes 프로퍼티에 저장된다.
+- 이와는 별도로 value 어트리뷰트의 값이 각 어트리뷰트에 대응하는 요소 노드의 `DOM 프로퍼티`인 value 프로퍼티에 할당된다. 이는 살아있는(live) 것이다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HTML 어트리뷰트와 DOM 프로퍼티</title>
+</head>
+<body>
+    <input id="user" type="text" value="name">
+    <script>
+        const $input = document.getElementById(`user`);
+
+        // getAttribute 메서드로 취득한 value 어트리뷰트 값
+        // 초기 상태 값으로 불변, 유지된다
+        console.log($input.getAttribute(`value`));
+
+        // DOM의 value 프로퍼티 값
+        // 최신 상태 값으로 사용자의 입력에 의해 동적으로 변경된다
+        $input.oninput = () => {
+            console.log($input.value);
+        }
+    </script>
+</body>
+</html>
+```
+
+![Animation](https://user-images.githubusercontent.com/97890886/170477227-06bb696c-611a-4bcb-b4ff-5e7cc7ebe295.gif)
+
+### HTML 어트리뷰트
+
+> HTML 어트리뷰트로 지정한 HTML 요소의 초기 상태를 관리한다.
+> 
+
+어트리뷰트 노드에서 관리하는 어트리뷰트 값은 사용자의 입력에 의해 상태가 변경되어도 **불변**하며, 초기 상태를 그대로 유지한다. 이를 취득하거나 변경하는 것이 바로 getAttribute/setAttribute 메서드이다.
+
+### DOM 프로퍼티
+
+> 사용자 입력에 의한 상태 변화에 반응하여 최신 상태를 관리한다.
+> 
+
+DOM 프로퍼티로 취득/변경할 수 있으며 사용자의 입력에 따라 언제든지 동적으로 변경되어 최신 상태를 유지한다. 이 때 초기 상태 값(getAttribute 메서드로 취득 가능한 HTML 어트리뷰트 값)은 불변한다.
+
+```jsx
+// DOM 프로퍼티 조작으로 HTML 요소의 최신 상태 변경
+        // 사용자 입력과 동일하게 동작한다
+        $input.value = `hello`;
+        // 초깃값은 불변, 유지된다
+        console.log($input.getAttribute(`value`));    // name
+```
+
+그러나 각 어트리뷰트가 각자의 역할이 있고 모든 어트리뷰트가 사용자의 입력에 영향을 받는 것은 아니기 때문에(예를 들어, checkbox 요소의 id 어트리뷰트 등은 사용자 입력과 관계없이 항상 동일한 값을 유지한다)사용자 입력에 의한 상태 변화와 관계있는 DOM 프로퍼티에 대해서만 항상 최신 값을 유지한다.
+
+```jsx
+// 사용자 입력에 영향을 받지 않는 어트리뷰트
+        $input.id = `hello`;
+
+        // 사용자 입력(DOM 프로퍼티 조작)과 관계없이 항상 불변, 유지된다
+        console.log($input.id);    // user
+        console.log($input.getAttribute(`id`));    // user
+```
+
+> HTML 어트리뷰트와 DOM 프로퍼티의 대응 관계
+> 
+
+대부분의 HTML 어트리뷰트는 어트리뷰트 이름과 동일한 DOM 프로퍼티와 1:1로 대응하지만, 언제나 그런 것은 아니다.
+
+- id 어트리뷰트와 id 프로퍼티는 1:1대응하며, 동일한 값으로 연동된다.
+- input 요소의 value 어트리뷰트는 value 프로퍼티와 1:1대응하지만 전자는 초기 상태를, 후자는 최신 상태를 갖는다.
+- textContent 어트리뷰트는 대응 어트리뷰트가 존재하지 않는다.
+
+> DOM 프로퍼티 값의 타입
+> 
+
+getAttribute 메서드로 어트리뷰트 값은 언제나 문자열이지만,  DOM 프로퍼티로 취득한 최신 상태 값은 문자열이 아닐 수도 있다.
+
+- checkbox요소의 checked 프로퍼티 값은 `불리언` 타입이다
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HTML 어트리뷰트와 DOM 프로퍼티</title>
+</head>
+<body>
+    <input type="checkbox" checked>
+    <script>
+        const $checkbox = document.querySelector(`input[type=checkbox]`);
+
+        console.log($checkbox.checked); // true
+    </script>
+</body>
+</html>
+```
+
+## 사용자 정의 어트리뷰트
+
+> `data 어트리뷰트`로 사용자 정의 어트리뷰트를 만들 수 있다.
+> 
+
+data- 접두사 + 임의의 이름을 붙여 사용한다.
+
+> `HTMLElement.dataset 프로퍼티`로 data 어트리뷰트 값을 취득할 수 있다.
+> 
+
+dataset 프로퍼티를 참조하면 data 어트리뷰트의 정보가 담긴 DOMStringMap객체가 반환된다. 이 객체는 data 뒤 임의의 이름이 (카멜 케이스로)담긴 프로퍼티를 가지고 있으며 이 프로퍼티로 data 어트리뷰트 값을 조작할 수 있다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Attribute</title>
+</head>
+<body>
+    <ul id="users">
+        <li class="1" data-user-id="100", data-role="boss"></li>
+        <li class="2" data-user-id="101", data-role="admin"></li>
+    </ul>
+</body>
+<script>
+    const $users = document.getElementById(`users`).children;
+
+    // user-id가 100인 요소 노드 취득
+    const user = $users.find(u => u.dataset.userId === "100");
+
+    // user-id가 100인 요소 노드의 data-role 값 변경
+    $user.dataset.role = `staff`;
+</script>
+</html>
+```
+
+존재하지 않는 data 어트리뷰트를 키로 사용하여 dataset 프로퍼티에 값을 할당하면 동적으로 추가된다.
+
+# 스타일
+
+## 인라인 스타일 조작
+
+> `[HTMLElement.prototype.style](http://HTMLElement.prototype.style)` 프로퍼티
+> 
+
+요소 노드의 **인라인 스타일**을 취득/조작하는 접근자 프로퍼티(setter/getter 전부 존재)
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>style</title>
+</head>
+<body>
+    <div id="hello" style="color: red">Hello World</div>
+</body>
+<script>
+    const $box = document.querySelector(`div#hello`);
+    $box.style.color = `blue`;
+    $box.style.width = `200px`;
+    $box.style.height = `100px`
+    $box.style.backgroundColor = `yellow`;
+</script>
+</html>
+```
+
+![style1 PNG](https://user-images.githubusercontent.com/97890886/170477248-f6e69ddc-e822-4ff6-adcb-f899e82616e1.png)
+
+![style2 PNG](https://user-images.githubusercontent.com/97890886/170477267-5e7edca0-cbb4-4aad-9f6b-33013bb990be.png)
+
+![style3 PNG](https://user-images.githubusercontent.com/97890886/170477274-97217c29-f0aa-4c3b-aa52-5a10f48dd638.png)
+
+
+
+style 프로퍼티를 참조하면 CSSStyleDeclaration 타입의 객체를 반환한다.
+
+> CSSStyleDeclaration 객체
+> 
+
+다양한 CSS 스타일에 대응하는 프로퍼티들을 가지고 있음 → 이 프로퍼티에 값 할당시 해당 CSS 프로퍼티가 `인라인 스타일`로 HTML 요소에 추가되거나 변경됨. 이때 주의할 점은 CSS 스타일은 케밥 케이스지만 CSSStyleDeclaration 객체의 프로퍼티는 이름은 같지만 **카멜 케이스**라는 것이다. 위 예제에서 background-color은 backgroundColor이다.
+
+케밥 케이스의 CSS 프로퍼티를 그대로 사용하려면 . 인덱스 대신 대괄호 표기법을 사용하면 된다.
+
+```jsx
+$box.style[`background-color`] = `yellow`;
+```

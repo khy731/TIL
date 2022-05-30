@@ -1521,4 +1521,135 @@ style 프로퍼티를 참조하면 CSSStyleDeclaration 타입의 객체를 반�
 
 ```jsx
 $box.style[`background-color`] = `yellow`;
+
+
 ```
+
+## 클래스 조작 프로퍼티
+
+CSS class를 미리 정의한 후, HTML 요소의 class 어트리뷰트 값을 변경하여 스타일을 변경할 수 있다. class 어트리뷰트에 해당하는 DOM 프로퍼티를 사용하여 클래스를 조작해보자.
+
+### className
+
+> Element.prototype.className 프로퍼티(getter/setter 모두 존재)는 HTML 요소의 class 어트리뷰트 값을 취득/변경한다.
+> 
+
+참조와 할당이 전부 `문자열` 단위이다. 요소 노드의 className 프로퍼티를 참조하면 class 어트리뷰트 값이 문자열로 반환되고, className 프로퍼티에 문자열을 할당하여 스타일을 바꾼다.
+
+문자열이 반환되므로 공백으로 구분된 여러 개의 클래스를 다루는 경우 불편하다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>className 프로퍼티</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: aquamarine;
+        }
+        .red {
+            color: red;
+        } 
+        .violet {
+            color: darkviolet;
+        }
+    </style>
+</head>
+<body>
+    <div class="box red">Hello World</div>
+</body>
+<script>
+    const $box = document.querySelector(`div.box`);
+    console.log($box.className);    // box red
+
+    $box.className = `box violet`;
+</script>
+</html>
+```
+
+### classList 프로퍼티
+
+`DOMTokenList 객체`를 반환한다.
+
+> DOMTokenList 객체
+> 
+- class 어트리뷰트의 정보를 나타내는 컬렉션 객체
+- 유사 배열 객체이면서 이터러블
+- 유용한 `메서드` 제공
+    - add(…className)
+    
+    인수로 전달한 1개 이상의 문자열을 class 어트리뷰트 값으로 추가
+    
+    - remove(…className)
+    
+    인수로 전달한 1개 이상의 문자열을 class 어트리뷰트 값에서 삭제(일치하지 않을 시 에러 없이 무시됨)
+    
+    - item(index)
+    
+    인수로 전달한 인덱스에 해당하는 클래스를 반환
+    
+    - contains(className)
+    
+    인수로 전달한 문자열과 일치하는 클래스가 포함되어 있는지 확인
+    
+    - replace(oldClassName, newClassName)
+    
+    첫 번째 인수 → 두 번째 인수변경
+    
+    - toggle(className[, force])
+    
+    인수로 전달한 문자열과 일치하는 클래스가 존재 시→ 제거, 존재하지 않을 시 → 추가. 두 번째 인수로 불리언 값(혹은 불리언 값으로 평가되는 조건식)을 전달하여 true면 → 강제 추가, false면 → 강제 제거
+    
+    등등…
+    
+
+## 요소에 적용된 CSS 스타일 참조
+
+> window.getComputedStyle(element[, pseudo]) 메서드
+> 
+
+인라인 스타일만 반환하는 style 프로퍼티와는 달리, 클래스나 상속 등을 통해 적용된 스타일을 참조할 수 있다. 즉 **HTML 요소에 적용된 모든 CSS 스타일을 참조**한다.
+
+첫 번째 인수로 전달된 요소 노드에 적용되어 있는 **평가된 스타일(요소 노드에 적용된 모든 스타일이 죄합되어 최종적으로 적용된 스타일)**을 CSSStryleDeclaration 객체에 담아 반환한다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>getComputedStyle</title>
+    <style>
+        body {
+            color: red;
+        }
+        .box {
+            width: 300px;
+            height: 300px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">This is Box</div>
+</body>
+<script>
+    const $box = document.querySelector(`div.box`);
+
+    const boxStyle = window.getComputedStyle($box);
+
+    // 임베딩 스타일
+    boxStyle.width;    // 300px
+    boxStyle.height;   // 300px
+    boxStyle.border;    // 1px solid rgb(0,0,0)
+
+    // 상속 스타일(body -> .box)
+    console.log(boxStyle.color);    // rgb(255, 0, 0)
+
+    // 기본 스타일
+    boxStyle.display;   // block
+</script>
+</html>
+```
+
+두 번째 인수로 `의사 요소`를 지정하는 문자열을 전달할 수 있다. :after, :hover 등…

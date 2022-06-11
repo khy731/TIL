@@ -31,7 +31,8 @@
 </html>
 ```
 
-![Animation.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f2d7e96b-a32a-4776-a353-2f04dede773b/Animation.gif)
+![1](https://user-images.githubusercontent.com/97890886/173191381-150d1da8-c35e-49e9-9be9-70844f26db42.gif)
+
 
 # 이벤트 타입
 
@@ -90,7 +91,7 @@ function onclick(event) {
 
 동일한 이름의 키 onclick 이벤트 핸들러 프로퍼티)에 할당된다.
 
-![button.PNG](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/00977921-942c-45ab-b717-e802c5d35cf0/button.png)
+![2](https://user-images.githubusercontent.com/97890886/173191387-d84e1884-3f6b-42e2-8b22-09ff666f7f94.png)
 
 > 이렇게 복잡하게 동작하는 이유는 이벤트 핸들러에 `인수`를 전달하기 위해서이다.
 > 
@@ -187,6 +188,6 @@ EventTarget.addEventListener(`eventType`,`functionName`,[, useCapture]);
 </html>
 ```
 
-![Animation2.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b2591bd9-6d43-45ee-a917-111ea19144e5/Animation2.gif)
+![3](https://user-images.githubusercontent.com/97890886/173191395-6ad2bd74-e631-4ecc-8899-c97380286d53.gif)
 
 메서드 방식은 이벤트 핸들러 프로퍼티에 바인딩된 이벤트 핸들러에 아무런 영향을 주지 않으므로 다수의 이벤트 핸들러가 모두 호출된다. 즉 **여러 이벤트 핸들러를 등록 할 수 있다.**

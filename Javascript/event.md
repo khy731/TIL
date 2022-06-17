@@ -191,3 +191,196 @@ EventTarget.addEventListener(`eventType`,`functionName`,[, useCapture]);
 ![3](https://user-images.githubusercontent.com/97890886/173191395-6ad2bd74-e631-4ecc-8899-c97380286d53.gif)
 
 메서드 방식은 이벤트 핸들러 프로퍼티에 바인딩된 이벤트 핸들러에 아무런 영향을 주지 않으므로 다수의 이벤트 핸들러가 모두 호출된다. 즉 **여러 이벤트 핸들러를 등록 할 수 있다.**
+
+# 이벤트 핸들러 제거
+
+> EventTarget.prototype.removeEventListener 메서드
+> 
+
+addEventListner 메서드로 등록한 이벤트 핸들러를 제거할 수 있다. 인수는 addEventListner과 일치해야 한다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 핸들러 제거</title>
+</head>
+<body>
+    <button>Click me!</button>
+    <script>
+        const $button = document.querySelector(`button`);
+        const handleClick = () => console.log(`clicked!`);
+
+        // 이벤트 핸들러 등록
+        $button.addEventListener(`click`, handleClick);
+
+        // 이벤트 핸들러 제거
+        // 등록때와 인수가 일치해야 한다
+        $button.removeEventListener(`click`, handleClick);
+    </script>
+</body>
+</html>
+```
+
+> 무명 함수를 이벤트 핸들러로 등록한 경우, **삭제가 불가능**하다.
+> 
+
+removeEventListener 메서드에 두 번째 인수로 전달한 이벤트 핸들러(삭제할 대상)는 addEventListner 메서드의 인수와 **동일한 함수**여야 하기 때문에, 이벤트 핸들러를 제거하기 위해서는 이벤트 핸들러의 참조를 변수/자료구조에 저장하고 있어야 한다.
+
+```jsx
+// 즉, 무명 함수를 이벤트 핸들러로 등록한 경우 제거가 불가능하다
+// -> 이벤트 핸들러를 이후 제거하기 위해서는 이벤트 핸들러의 참조를 변수/자료구조에 저장해야 한다
+$button.addEventListener(`dbclick`, () => console.log(`double clicked!`));
+// 등록된 이벤트 핸들러를 참조할 수 없음 -> 동일한 인수 X -> 제거 불가
+```
+
+> 기명 이벤트 핸들러 내부적으로 removeEventListener 메서드를 호출하여 `단 한번만 이벤트 핸들러가 호출`되도록 이벤트 핸들러를 제거할 수 있다.
+> 
+
+```jsx
+// 기명 이벤트 핸들러 내부에 제거 메서드 호출
+// 한 번만 호출됨
+$button.addEventListener(`keypress`, function foo() {
+      console.log(`foo`);
+      $button.removeEventListener(`keypress`, foo);
+})
+
+// 위와 동일하게 한 번만 호출되나, 무명 이벤트 핸들러 일 때
+// arguments.callee(함수 자신을 가리킴)을 사용할 수도 있다
+// 코드 최적화를 방해하므로 권장되지 않는다
+ $button.addEventListener(`mousedown`, function() {
+      console.log(`Hi`);
+      $button.removeEventListener(`mousedown`, arguments.callee);
+});
+```
+
+이벤트 핸들러 프로퍼티 방식으로 등록한 이벤트 핸들러는 이 메서드로 제거할 수 없으며, 이벤트 핸들러 프로퍼티에 `null`을 할당함으로써 제거한다.
+
+```jsx
+$button.ondblclick = null;
+```
+
+# 이벤트 객체
+
+이벤트 객체는
+
+1. 사용자의 행위(마우스 클릭 등)에 의해 생성되고
+
+2. 자바스크립트 코드에 의해 인위적으로 생성된다.
+
+이벤트가 발생하면 `이벤트 객체`(이벤트에 대한 다양한 정보가 담겨 있음)가 동적으로 생성되고, 이는 이벤트 핸들러의 **첫 번째 인수**로 전달된다. 즉, 이벤트 핸들러의 인수로 이벤트 객체(이벤트 발생 그 자체)를 전달받을 수 있다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 객체</title>
+</head>
+<body>
+    <p>클릭하면 클릭한 곳의 좌표가 표시됩니다</p>
+    <em class="message"></em>
+    <script>
+        const $msg = document.querySelector(`.message`);
+        function showCoords(e) {
+            $msg.textContent = `x : ${e.clientX}, y : ${e.clientY}`;
+        }
+        
+        document.addEventListener(`click`, showCoords);
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-16 14-26-28.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9526d39b-dd1f-472f-a81e-7dbdd9ed1080/Honeycam_2022-06-16_14-26-28.gif)
+
+단, 이벤트 핸들러 어트리뷰트 방식에서 이벤트 객체를 인수로 전달받기 위해서는 무조건 이벤트 핸들러의 **첫 번째 배개변수 이름**을 `event`로 해야 한다. 
+
+```jsx
+<em class="message" onclick="showCoords(event)"></em>
+```
+
+위 코드는 파싱되어 다음과 같은 함수(onclick 이벤트 핸들러)를 암묵적으로 생성하여 onclick 이벤트 핸들러 프로퍼티에 할당하는데, 이때 암묵적으로 생성된 onclick 이벤트 핸들러의 첫 번째 매개변수 이름이 암묵적으로 event로 명명되므로 꼭 event를 사용해야 한다.
+
+```jsx
+function onclick(event) {
+            showCoords(event);
+        }
+```
+
+## 이벤트 객체의 상속 구조
+
+이벤트 객체는 상속 구조를 갖는데, 이들은 전부 `생성자 함수`이기 때문에 생성자 함수를 호출하여 직접 이벤트 객체를 생성할 수도 있다. 이벤트가 발생하면 암묵적으로 생성되는 이벤트 객체도 이러한 생성자 함수에 의해 생성되며, 이들은 전부 프로토타입 체인의 일원이 된다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 객체의 상속 구조</title>
+</head>
+<body>
+    <script>
+        // Event 생성자 함수 호출 -> foo 이벤트 타입의 Event 객체 생성
+        const eventFoo = new Event(`foo`);
+        console.log(eventFoo);
+
+        // MouseEvent 생성자 함수 호출 -> click 이벤트 타입의 MouseEvent 객체 생성
+        // 상속 구조에 의해 Event.prototype과 UIEvent.prototype을 상속받음
+        const mouse = new MouseEvent(`click`);
+        console.log(`mouse`);
+    </script>
+</body>
+</html>
+```
+
+`Event 인터페이스`는 DOM 내에서 발생한 이벤트에 의해 생성되는 이벤트 객체이며, 모든 이벤트 객체가 공통으로 갖는 프로퍼티가 정의되어 있다. 하위 인터페이스에는 이벤트 타입에 따른 고유 프로퍼티가 정의되어 있다. 이벤트 객체(와 그 프로퍼티)는 발생한 이벤트의 타입에 따라 달라진다.
+
+### 공통 프로퍼티
+
+Event.prototype에 정의되어 있는 이벤트 관련 프로퍼티는 모든 파생 이벤트 객체의 상속된다.
+
+- type : 이벤트 타입
+- target : 이벤트를 발생시킨 DOM 요소
+- currentTarget : 이벤트 핸들러가 바인딩된 DOM 요소
+- eventPhase : 이벤트 전파 단계
+- bubbles : 이벤트를 버블링으로 전파하는가 여부
+- cancelable : 이벤트 기본 동작을 취소가능한가 여부
+- defaultPrevented : 이벤트를 취소했는지 여부
+- isTrusted : 사용자의 행위에 의해 발생한 이벤트인지 여부
+- timeStamp : 이벤트가 발생한 시각
+
+체크박스 요소의 체크 상태가 변경되면 현재 체크 상태를 출력하는 코드
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>체크박스 체크 상태 출력</title>
+</head>
+<body>
+    <input type="checkbox">
+    <em class="message">off</em>
+    <script>
+        const $checkbox = document.querySelector(`input[type=checkbox]`);
+        const $msg = document.querySelector(`em.message`);
+
+        // e.target : change 이벤트를 발생시킨 DOM 요소($checkbox)
+        // e.target.checked : $checkbox(체크박스 요소)의 현재 체크 상태
+        $checkbox.onchange = e => $msg.textContent = e.target.checked ? `on` : `off`
+    </script>
+</body>
+</html>
+```
+
+본 예제에서는 target 프로퍼티(이벤트를 발생시킨 요소)와 currentTarget 프로퍼티(이벤트 핸들러가 바인딩된 요소)가 같은 DOM 요소($checkbox)를 가리킨다. 대부분은 이게 일반적이지만, 이벤트 위임에서는 이 둘이 다를 수도 있다.
+
+### 마우스 정보 취득
+
+click, dbclick, mousedown, mousemove 등의 이벤트가 발생하면 생성되는 MouseEvent 타입의 이벤트 객체가 가진 고유 프로퍼티로 마우스 정보를 취득할 수 있다.
+
+- 마우스 포인터의 좌표 정보 : screenX/Y, clientX/Y, pageX/Y, offsetX/Y
+- 버튼 정보 : altKey, ctrlKey, shiftKey, button
+
+> 예제 : DOM 요소를 드래그하여 이동시키기
+> 
+
+마우스 버튼을 누른 상태(mousedown) → 마우스 이동(mousemove) → 마우스 버튼을 뗀 상태(mouseup)

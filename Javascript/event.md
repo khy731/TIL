@@ -448,7 +448,7 @@ click, dbclick, mousedown, mousemove 등의 이벤트가 발생하면 생성되�
 </html>
 ```
 
-![Honeycam 2022-06-21 12-22-01.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b9bb9e31-bf19-4dd4-9a1b-f5b4c3e60bb0/Honeycam_2022-06-21_12-22-01.gif)
+![Honeycam 2022-06-21 12-22-01](https://user-images.githubusercontent.com/97890886/174812001-0525c158-108f-452a-8b69-9ec1c4472499.gif)
 
 ### 키보드 정보 취득
 
@@ -492,7 +492,8 @@ click, dbclick, mousedown, mousemove 등의 이벤트가 발생하면 생성되�
 </html>
 ```
 
-![Honeycam 2022-06-21 12-38-28.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f0a4217c-880b-4d6c-9115-9119cd6628ef/Honeycam_2022-06-21_12-38-28.gif)
+
+![Honeycam 2022-06-21 12-38-28](https://user-images.githubusercontent.com/97890886/174812059-4df95fde-b2c7-440c-b6ed-64cf1479a626.gif)
 
 # 이벤트 전파
 
@@ -534,7 +535,9 @@ DOM 트리 상 요소 노드에서 발생한 이벤트 객체는 이벤트를 �
 </html>
 ```
 
-![Honeycam 2022-06-21 13-06-16.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7f5ad05d-0aa3-4898-9e22-333001e3ff81/Honeycam_2022-06-21_13-06-16.gif)
+
+![Honeycam 2022-06-21 13-06-16](https://user-images.githubusercontent.com/97890886/174812120-91727068-a392-4ba7-834a-b708ddda76e4.gif)
+
 
 두 번째 li만 클릭했을 뿐인데 ul에 등록한 이벤트도 발생한다. 또한, 세 번째 li를 클릭할 경우 ul의 이벤트가 발생한다.
 
@@ -559,7 +562,9 @@ li 요소를 클릭 → 클릭 이벤트 발생하여 클릭 이벤트 객체 �
 - 리소스 이벤트 : load/unload/abort/error
 - 마우스 이벤트 : mouseenter/museleave
 
-![bubbling.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/aa961269-bbf5-4708-9621-c6f45bc2a3ce/bubbling.png)
+
+![bubbling](https://user-images.githubusercontent.com/97890886/174812252-cbc20e36-e3be-4d26-a976-0d16784942be.png)
+
 
 상속, 중첩, 재귀 등과는 또 다른 구조이다. 이벤트가 제일 깊은 곳에 있는 요소에서 시작해 부모 요소를 거슬러 올라가며 발생하는 모양이 마치 물속 거품(bubble)과 닮았기 때문에 붙여진 이름이며, 마치 파동과 같은 움직임을 보인다. 대부분의 이벤트 전파 관련 코드는 버블링이며, 캡처링은 거의 사용되지 않는다.
 
@@ -622,7 +627,10 @@ addEventListener 메서드로 등록한 이벤트 핸들러는 모든 단계의 
 </html>
 ```
 
-![Honeycam 2022-06-21 13-32-50.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/804c51b2-daa9-45f9-b707-6209aa69b36b/Honeycam_2022-06-21_13-32-50.gif)
+
+![Honeycam 2022-06-21 13-32-50](https://user-images.githubusercontent.com/97890886/174812291-37caf737-105e-4c48-941f-1b38e43c6ed3.gif)
+
+
 
 > 캡처링 & 버블링 확인 예제
 > 
@@ -810,4 +818,4 @@ a 요소를 클릭하면 href 어트리뷰트의 링크로 이동하는 등의 �
 </html>
 ```
 
-![Honeycam 2022-06-21 15-26-34.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/596b6033-9d7c-4b3f-a98c-877666c7191e/Honeycam_2022-06-21_15-26-34.gif)
+![Honeycam 2022-06-21 15-26-34](https://user-images.githubusercontent.com/97890886/174812347-3049d9aa-f09a-4d48-b55e-a884dd0b1613.gif)

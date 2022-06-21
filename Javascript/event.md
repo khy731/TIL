@@ -382,5 +382,432 @@ click, dbclick, mousedown, mousemove 등의 이벤트가 발생하면 생성되�
 
 > 예제 : DOM 요소를 드래그하여 이동시키기
 > 
+- 시작 : 마우스 버튼을 누른 상태(mousedown)에서 마우스 이동(mousemove)
+    
+    종료 : 마우스 버튼을 뗀 상태(mouseup)
+    
+- 드래그가 시작되면 mousedown 이벤트가 발생했을 시점의 마우스 포인터 좌표와 mousemove 이벤트가 발생할 때마다의 마우스 포인터 좌표를 비교하여 이동 거리를 계산한다. mouseup 이벤트가 발생하면 드래그 대상 요소를 이동시키는 이벤트 핸들러를 제거하여 이동을 멈춘다.
+- MouseEvent 타입의 이벤트 객체에서 제공하는 clientX/Y를 사용한다. 이는 viewport(웹페이지의 가시 영역)를 기준으로 마우스 포인터의 좌표를 나타내준다.
 
-마우스 버튼을 누른 상태(mousedown) → 마우스 이동(mousemove) → 마우스 버튼을 뗀 상태(mouseup)
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>마우스 드래그 프로그램</title>
+    <style>
+        .box {
+            width: 200px;
+            height: 100px;
+            border: 1px solid black;
+            background-color: cornflowerblue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="box"></div>
+    <script>
+        // 드래그 대상 요소
+        const $box = document.querySelector(`div.box`);
+        // 현재(드래그 시작 지점)의 마우스 포인터 위치
+        const initialMousePos = {
+            x : 0,
+            y : 0,
+        };
+        // 이동할 거리
+        const offset = {
+            x : 0,
+            y : 0,
+        }
+        // mousemove 이벤트 핸들러(로 쓰일 함수)
+        // box를 이동시킨다
+        const move = e => {
+            // offset = 현재 마우스포인터 위치 - 드래그 시작 지점의 마우스포인터 위치
+            offset.x = e.clientX - initialMousePos.x;
+            offset.y = e.clientY - initialMousePos.y;
+            // transform 어트리뷰트의 translate를 사용하여 box 이동
+            $box.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0)`;
+        }
+
+        // mousedown 이벤트 핸들러
+        // box의 이동 거리를 표시한다
+        $box.addEventListener(`mousedown`, e => {
+            // 현재 마우스 좌표 = 드래그 시작 지점의 마우스 좌표 - 이동한 상태의 마우스 좌표
+            initialMousePos.x = e.clientX - offset.x;
+            initialMousePos.y = e.clientY - offset.y;
+            // mousedown 이벤트 상태에서 mousemove 이벤트 발생 시 box 요소 이동
+            document.addEventListener(`mousemove`, move);
+        });
+
+        // mouseup 이벤트 발생 시 mousemove 이벤트를 제거 -> 이동을 멈춘다
+        document.addEventListener(`mouseup`, () => {
+            document.removeEventListener(`mousemove`, move);
+        });
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-21 12-22-01.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b9bb9e31-bf19-4dd4-9a1b-f5b4c3e60bb0/Honeycam_2022-06-21_12-22-01.gif)
+
+### 키보드 정보 취득
+
+`KeyboardEvent` 타입의 이벤트 객체는 keydown, keyup, keypress 이벤트가 발생하면 생성되며 ctrlKey, shiftKey, metaKey, key, keyCode 등의 고유 프로퍼티를 갖는다.
+
+ 
+
+> 예제 : input 요소의 입력 필드에 엔터 키가 입력되면 현재까지 입력 필드에 입력된 값을 출력
+> 
+- key 프로퍼티 : 입력한 키 값을 문자열로 반환(예시 : 엔터 키의 경우 Enter 반환)
+- keydown 이벤트 : 모든 키를 눌렀을 때 발생
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>키보드 이벤트</title>
+    <style>
+        * {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <input type="text"  />
+    <em class="message"></em>
+    <script>
+        const $input = document.querySelector(`input[type=text]`);
+        const $msg = document.querySelector(`em.message`);
+
+        const printValue = e => {
+            // 입력한 키가 엔터키가 아니라면 무시(return은 함수 탈출의 용도로도 쓰임)
+            if (e.key !== `Enter`) return;
+            // 현재까지 입력 필드에 입력된 값을 출력
+            $msg.textContent = e.target.value;
+            e.target.value = ``;
+        }
+        $input.addEventListener(`keydown`, printValue);
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-21 12-38-28.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f0a4217c-880b-4d6c-9115-9119cd6628ef/Honeycam_2022-06-21_12-38-28.gif)
+
+# 이벤트 전파
+
+DOM 트리 상 요소 노드에서 발생한 이벤트 객체는 이벤트를 발생시킨 event target DOM 요소를 중심으로 DOM 트리 구조를 통해 `전파`되는데, 이를 `이벤트 전파(event propagation)`이라고 한다.
+
+이벤트 전파는 객체가 전파되는 방향에 따라 3단계로 구분된다.
+
+- capturing 캡처링 : 상위 요소 → 하위 요소
+- target : 이벤트가 이벤트 타깃에 도달
+- bubbling : 하위 요소 → 상위 요소
+
+예를 들어, 다음과 같은 코드에서 li 요소를 클릭했다고 치자.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 전파</title>
+    <style>
+        * {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <ul id="user">
+        <li id="first">kang</li>
+        <li id="second">Jung</li>
+        <li id="third">Mark</li>
+    </ul>
+    <script>
+        const $ul = document.querySelector(`ul#user`);
+        const $liSec = document.querySelector(`li#second`);
+
+        $ul.onclick = () => {alert(`ul에 등록한 이벤트`)};
+        $liSec.onclick = () => {alert(`두 번째 li에 등록한 이벤트`)};
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-21 13-06-16.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7f5ad05d-0aa3-4898-9e22-333001e3ff81/Honeycam_2022-06-21_13-06-16.gif)
+
+두 번째 li만 클릭했을 뿐인데 ul에 등록한 이벤트도 발생한다. 또한, 세 번째 li를 클릭할 경우 ul의 이벤트가 발생한다.
+
+li 요소를 클릭 → 클릭 이벤트 발생하여 클릭 이벤트 객체 생성 → **클릭된 li요소가 event target이 됨**
+
+1. 클릭 이벤트 객체가 window부터 시작하여 이벤트 타깃 방향으로 전파되는 것이 `캡처링`
+2. 이벤트 객체가 이벤트를 발생시킨 이벤트 타깃에 도달하는 것이 `타깃`
+3. 이벤트 객체가 이벤트 타깃에서 시작하여 window 방향으로 전파되는 것이 `버블링`
+
+## 버블링
+
+> 거의 모든 이벤트는 버블링(bubbling)된다.
+> 
+
+이벤트가 하위 요소에서 상위 요소 방향으로 전파되는 것.
+
+즉, 이벤트는 이벤트 타깃(이벤트를 발생시킨 요소)에서뿐만 아니라 이벤트 패스(event path, 이벤트가 통과하는 트리 상 경로)에 위치한 상위 DOM 요소에서도 캐치할 수 있다.
+
+‘거의 모든’ 이벤트라고 한 이유는, 다음 이벤트들의 이벤트 객체의 공통 프로퍼티 event.bubbles 값이 전부 false이기 때문이다.
+
+- 포커스 이벤트 : focus/blur
+- 리소스 이벤트 : load/unload/abort/error
+- 마우스 이벤트 : mouseenter/museleave
+
+![bubbling.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/aa961269-bbf5-4708-9621-c6f45bc2a3ce/bubbling.png)
+
+상속, 중첩, 재귀 등과는 또 다른 구조이다. 이벤트가 제일 깊은 곳에 있는 요소에서 시작해 부모 요소를 거슬러 올라가며 발생하는 모양이 마치 물속 거품(bubble)과 닮았기 때문에 붙여진 이름이며, 마치 파동과 같은 움직임을 보인다. 대부분의 이벤트 전파 관련 코드는 버블링이며, 캡처링은 거의 사용되지 않는다.
+
+addEventListener 메서드로 등록한 이벤트 핸들러는 모든 단계의 이벤트를 선별적으로 캐치할 수 있(세 번째 인수로 true를 전달해야 함)으나 이벤트 핸들러 어트리뷰트/프로퍼티 방식으로 등록한 이벤트 핸들러는 버블링과 타깃 단계만 캐치 가능하다.
+
+> 버블링 확인 예제
+> 
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>버블링</title>
+    <style>
+
+        div {
+            background-color: gold;
+            position: relative;
+            width: 200px;
+            height: 200px;
+            text-align: center;
+            cursor: pointer;
+        }
+        p {
+            background-color: olivedrab;
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 150px;
+            height: 150px;
+        }  
+        button {
+            background-color: coral;
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 100px;
+            height: 100px;
+            line-height: 50px;
+            margin: 0;
+        }
+          body {
+            line-height: 25px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div>div
+        <p>p
+            <button>button</button>
+        </p>
+    </div>
+    <script>
+        document.querySelector(`div`).addEventListener(`click`, () => {alert(`Handler for div`)});
+        document.querySelector(`p`).addEventListener(`click`, () => {alert(`Handler for p`)});
+        document.querySelector(`button`).addEventListener(`click`, () => {alert(`Handler for button`)});
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-21 13-32-50.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/804c51b2-daa9-45f9-b707-6209aa69b36b/Honeycam_2022-06-21_13-32-50.gif)
+
+> 캡처링 & 버블링 확인 예제
+> 
+
+```jsx
+<style>
+  body * {
+    margin: 10px;
+    border: 1px solid blue;
+  }
+</style>
+
+<form>FORM
+  <div>DIV
+    <p>P</p>
+  </div>
+</form>
+
+<script>
+  for(let elem of document.querySelectorAll('*')) {
+    elem.addEventListener("click", e => alert(`캡쳐링: ${elem.tagName}`), true);
+    elem.addEventListener("click", e => alert(`버블링: ${elem.tagName}`));
+  }
+</script>
+```
+
+이 예시는 문서 내 요소 '전체’에 핸들러를 할당해서 어떤 핸들러가 동작하는지를 보여줍니다.
+
+`<p>`를 클릭하면 다음과 같은 순서로 이벤트가 전달됩니다.
+
+1. `HTML` → `BODY` → `FORM` → `DIV` (캡처링 단계)
+2. `P` (타깃 단계, 캡쳐링과 버블링 둘 다에 리스너를 설정했기 때문에 두 번 호출됩니다.)
+3. `DIV` → `FORM` → `BODY` → `HTML` (버블링 단계)
+
+<p>를 클릭하면 이벤트가 최상위 조상에서 시작해 아래로 전파되고(캡처링 단계), 이벤트가 타깃 요소에 도착해 실행된 후(타깃 단계), 다시 위로 전파됩니다(버블링 단계). 이런 과정을 통해 요소에 할당된 이벤트 핸들러가 호출됩니다.
+
+출처 : [https://ko.javascript.info/bubbling-and-capturing#ref-348](https://ko.javascript.info/bubbling-and-capturing#ref-348)
+
+### 주의사항
+
+**핸들러를 제거할 때 `removeEventListener`가 같은 단계에 있어야 합니다.**
+
+`addEventListener(..., true)`로 핸들러를 할당해 줬다면, 핸들러를 지울 때, `removeEventListener(..., true)`를 사용해 지워야 합니다. 같은 단계에 있어야 핸들러가 지워집니다.
+
+### 왜 버블링을 우선하는가?
+
+캡처링 단계는 거의 쓰이지 않고, 주로 버블링 단계의 이벤트만 다뤄집니다. 이렇게 된 데는 논리적 배경이 있습니다.
+
+현실에서 사고가 발생하면 지역 경찰이 먼저 사고를 조사합니다. 그 지역에 대해 가장 잘 아는 기관은 지역 경찰이기 때문입니다. 추가 조사가 필요하다면 그 이후에 상위 기관이 사건을 넘겨받습니다.
+
+이벤트 핸들러도 이와 같은 논리로 만들어졌습니다. 특정 요소에 할당된 핸들러는 그 요소에 대한 자세한 사항과 무슨 일을 해야 할지 가장 잘 알고 있습니다. `<td>`에 할당된 핸들러는 `<td>`에 대한 모든 것을 알고 있기 때문에 `<td>`를 다루는데 가장 적합합니다. 따라서 `<td>`를 다룰 기회를 이 요소에 할당된 핸들러에게 가장 먼저 주는 것입니다.
+
+버블링과 캡처링은 '이벤트 위임(event delegation)'의 토대가 됩니다.
+
+# 이벤트 위임
+
+여러 개의 하의 DOM 요소에 각각 이벤트 핸들러를 등록하는 대신 하나의 상위 DOM 요소에 이벤트 핸들러를 등록하는 방법이다. 이벤트 전파(이벤트는 이벤트 타깃뿐만 아니라 상위 DOM 요소에서도 캐치할 수 있음, 캐처링&버블링)을 사용한 방법이다.
+
+이렇게 이벤트 위임을 하면 여러 개의 하위 DOM 요소에 이벤트 핸들러를 일일이 등록할 필요가 없다.
+
+> 이벤트 위임 사용 전
+> 
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 위임 사용 전</title>
+</head>
+<body>
+    <nav>
+        <ul id="lists">
+            <li id="first" class="select">first</li>
+            <li id="second">second</li>
+            <li id="third">third</li>
+        </ul>
+    </nav>
+    <div>선택된 내비게이션 아이템: <strong class="message"></strong></div>
+    <script>
+        const $lists = document.querySelector(`ul#lists`);
+        const $msg = document.querySelector(`nav.msg`);
+
+        function activate( {target} ) {
+            [...$lists.children].forEach( $list => {
+                // 상위 DOM(ul) 의 자식(li) 들을 순회
+                // target(event target)과 일치하는 자식(즉, 클릭 이벤트가 발생한 노드)에
+                // select 클래스를 추가하고 그 외 모든 내비게이션 아이템의 select 클래스를 제거
+                $list.classList.toggle(`select`, $list === target);
+                // 메세지로 표시
+                $msg.textContent = target.id;
+            })
+        }
+
+        // 모든 하위 요소에 이벤트 핸들러 등록
+        document.getElementById(`first`).onclick = activate;
+        document.getElementById(`second`).onclick = activate;
+        document.getElementById(`third`).onclick = activate;
+    </script>
+</body>
+</html>
+```
+
+내부적으로 성능이 낮을 뿐더러 유지보수에도 부적합하다.
+
+> 이벤트 위임 사용 후
+> 
+
+```jsx
+const $lists = document.querySelector(`ul#lists`);
+        const $msg = document.querySelector(`nav.msg`);
+
+        function activate( {target} ) {
+            // 이벤트를 발생시킨 요소(target)가 ul#lists의 자식 요소가 아니라면 무시
+            if (!target.matches(`ul#lists > li`)) return;
+
+            [...$lists.children].forEach( $list => {
+                // 상위 DOM(ul) 의 자식(li) 들을 순회
+                // target(event target)과 일치하는 자식(즉, 클릭 이벤트가 발생한 노드)에
+                // select 클래스를 추가하고 그 외 모든 내비게이션 아이템의 select 클래스를 제거
+                $list.classList.toggle(`select`, $list === target);
+                // 메세지로 표시
+                $msg.textContent = target.id;
+            })
+        }
+
+        // 상위 요소에 이벤트 핸들러 위임
+        $lists.addEventListener(`click`, activate);
+```
+
+## 특징
+
+- `Element.prototype.matches` 메서드를 사용하여 event target을 `검사`
+
+위 이벤트 핸들러는 ul#lists에 바인딩되어, 자기 자신은 물론 이벤트를 발생시킨 모든 본인의 하위 DOM 요소에 반응한다(버블링). 역으로 말하면 event target이 개발자가 기대한 DOM요소가 아닌 엉뚱한 요소가 될 수도 있다는 것이므로 원하는 DOM 요소에 한정하여 이벤트 핸들러가 실행되도록 이벤트 타깃을 **검사**할 필요가 있다.
+
+- `target` 프로퍼티와 `currentTarget` 프로퍼티가 달라진다
+    - taget 프로퍼티는 이벤트를 **발생**시킨 DOM 요소
+    - currentTarget 프로퍼티는 이벤트 핸들러가 실제로 **바인딩**된 DOM 요소
+
+# DOM 요소의 기본 동작 조작
+
+## 동작 중단하기
+
+> 이벤트 객체의 `preventDefult` 메서드
+> 
+
+a 요소를 클릭하면 href 어트리뷰트의 링크로 이동하는 등의 각 DOM 요소가 가진 기본 동작을 중단시킨다.
+
+## 이벤트 전파 방지
+
+> 이벤트 객체의 `stopPropagation` 메서드
+> 
+
+이벤트 전파를 중단시킨다. 주로 하위 DOM요소의 이벤트를 개별적으로 처리하기 위해 사용한다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <ul id="container">
+        <li class="b1">Button 1</li>
+        <li class="b2">Button 2</li>
+        <li class="b3">Button 3</li>
+    </ul>
+    <script>
+        // 이벤트 위임
+        // 클릭 이벤트가 발생한 하위 요소의 color를 빨강으로 변경
+        document.getElementById(`container`).addEventListener(`click`, ({target}) => {
+            if (!target.matches(`ul#container > li`)) return;
+            target.style.color = `red`;
+        } );
+
+        // 이벤트 전파 중단
+        // 상위 요소에서 이벤트를 캐치할 수 없다
+        // 클릭 이벤트가 발생할 경우 다른 하위 요소들과 달리 color가 파란색으로 변경된다
+        document.querySelector(`li.b3`).onclick = e => {
+            e.stopPropagation();
+            e.target.style.color = `blue`;
+        }
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-06-21 15-26-34.gif](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/596b6033-9d7c-4b3f-a98c-877666c7191e/Honeycam_2022-06-21_15-26-34.gif)

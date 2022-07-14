@@ -819,3 +819,375 @@ a 요소를 클릭하면 href 어트리뷰트의 링크로 이동하는 등의 �
 ```
 
 ![Honeycam 2022-06-21 15-26-34](https://user-images.githubusercontent.com/97890886/174812347-3049d9aa-f09a-4d48-b55e-a884dd0b1613.gif)
+
+# 이벤트 핸들러 내부의 this
+
+## 이벤트 핸들러 어트리뷰트 방식의 경우
+
+> 전역 객체(window)
+> 
+
+이벤트 핸들러 어트리뷰트의 값으로 지정한 문자열은 사실 **암묵적으로 생성되는 이벤트 핸들러의 문**이며, 어트리뷰트 값으로 지정한 문자열(함수)은 `일반 함수`로 호출되므로 함수 내부의 this는 전역 객체를 가리키게 된다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <button onclick="handleClick()">Click me!</button>
+    <script>
+        function handleClick() {
+            console.log(this);    // window
+        }
+    </script>
+</body>
+</html>
+```
+
+단, 이벤트 핸들러를 호출할 때(어트리뷰트 값으로 문자열을 넘길 때) 인수로 함께 전달한 this는 `이벤트를 바인딩한 DOM요소`이다.
+
+밑 예제에서의 handleClick 함수에 전달한 this는 암묵적으로 생성된 이벤트 핸들러 내부의 this이며, 이는 이벤트를 바인딩한 DOM요소를 가리킨다 → 이벤트 핸들러 프로퍼티 방식과 동일
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <button onclick="handleClick(this)">Click me!</button>
+    <script>
+        function handleClick(x) {
+            console.log(x);    //    <button onclick="handleClick(this)">Click me!</button>
+        }
+    </script>
+</body>
+</html>
+```
+![eventThis](https://user-images.githubusercontent.com/97890886/179008629-9a4245a8-aea8-4b42-8e52-7d8cdb52bf30.png)
+
+
+## 이벤트 핸들러 프로퍼티, addEventListner 메서드 방식의 경우
+
+> 이벤트를 바인딩한 DOM 요소
+> 
+
+즉, 이벤트 객체의 `currentTarget 프로퍼티`와 같다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>이벤트 핸들러 내부의 this</title>
+</head>
+<body>
+    <button class="btn1">0</button>
+    <button class="btn2">10</button>
+    <script>
+        const $button1 = document.querySelector(`button.btn1`);
+        const $button2 = document.querySelector(`button.btn2`);
+
+        $button1.onclick = function(e) {
+            console.log(this===e.currentTarget);    // T
+            ++this.textContent;
+        }
+
+        $button2.addEventListener(`click`, function(e) {
+            console.log(this);    // $button2
+            console.log(e.currentTarget);   // $button2
+            --this.textContent;
+        })
+    </script>
+</body>
+</html>
+```
+
+단, 화살표 함수로 정의한 이벤트 핸들러 내부의 this의 경우 `상위 스코프의 this`를 가리킨다. 화살표 함수는 함수 자체의 this 바인딩을 갖지 **않기** 때문이다. 위 예제의 이벤트 핸들러 함수를 화살표 함수로 할 경우 this는 상위 스코프의 this, 즉 전역 객체인 window를 가리키게 되고 ++this.textContext에는 NaN이 할당된다(undefined + 1)
+
+### `클래스`에서 이벤트 핸들러를 바인딩하는 경우 this에 주의하라
+
+클래스에서 프로토타입 메서드를 정의하여 이를 (이후에 생성될)인스턴스의 이벤트 핸들러로 등록해보자.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>클래스에서 이벤트 핸들러를 바인딩할 때 this</title>
+</head>
+<body>
+    <button class="btn">0</button>
+    <script>
+        class App {
+            constructor() {
+                this.$button = document.querySelector(`button.btn`);
+                this.count = 0;
+
+                // 프로토타입 메서드 increase를 이벤트 핸들러로 등록
+                this.$button.onclick = this.increase;
+            }
+
+            increase() {
+                this.$button.textContent += this.count;
+                // TypeError : cannot set property `textContent` of undefined
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+그러나 이는 실행해보면 예상대로 동작하지 않는다. 왜일까?
+
+> increase 메서드 내부의 this가 클래스가 생성할 인스턴스를 가리키지 않기 때문이다.
+> 
+
+increase 메서드 내부의 this는 `이벤트를 바인딩한 DOM 요소`를 가리키므로, 클래스가 생성할 인스턴스가 아닌 this.$button을 가리키게 된다.
+
+이를 해결하기 위해서는 increase 메서드 내부의 this가 클래스가 생성할 인스턴스를 가리키도록 해야 한다 → increase 메서드를 이벤트 핸들러로 바인딩할 때 bind 메서드로 this 전달
+
+> 함수를 Function.prototype.bind 메서드로 간접 호출하기
+> 
+
+첫 번째 인수로 전달한 객체로 호출한 함수의 this 바인딩을 교체하여 함수를 새롭게 생성하여 반환한다.
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>클래스에서 이벤트 핸들러를 바인딩할 때 this</title>
+</head>
+<body>
+    <button class="btn">0</button>
+    <script>
+        class App {
+            constructor() {
+                this.$button = document.querySelector(`button.btn`);
+                this.count = 0;
+
+                // increase 메서드 내부의 this가 이후에 생성될 인스턴스를 가리키도록 한다
+                this.$button.onclick = this.increase.bind(this);
+            }
+
+            increase() {
+                this.$button.textContent = ++this.count;
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+또는 클래스 필드에 할당한 화살표 함수를 이벤트 핸들러로 등록하여 해결할 수도 있다. (화살표 함수는 자체적인 this를 갖지 않으며 상위 스코프의 this를 따르기 때문) 다만 이 경우 이벤트 핸들러 increase는 프로토타입 메서드가 아닌 **인스턴스 메서드**가 된다.
+
+```jsx
+// 클래스 필드 정의
+// increase는 인스턴스 메서드이며, this는 인스턴스 자체를 가리킨다.
+increase = () => this.$button.textContent = ++this.count;
+```
+
+# 이벤트 핸들러에 인수 전달
+
+함수에 인수를 전달하려면 호출할 때 전달하는 것이 일반적이다. 이벤트 핸들러 어트리뷰트 방식은 동작 특성상 함수 호출문을 사용할 수 있으므로 인수를 전달할 수 있지만 나머지 방식들은 이벤트 핸들러를 **브라우저가** 호출하기 때문에 호출문을 사용할 수 없다(함수 자체를 등록해야 함) 그러나 방법이 아예 없는 것은 아닌데…
+
+> 이벤트 핸들러 내부에서 함수 호출과 동시에 인수 전달하기
+> 
+
+```jsx
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>이벤트 핸들러에 인수 전달하기</title>
+</head>
+<body>
+    <label>User Name<input type="text"></label>
+    <em class="message"></em>
+    <script>
+        const MIN_USER_NAME_LENGTH = 3;
+        const $input = document.querySelector(`label > input[type=text]`);
+        const $msg = document.querySelector(`em.message`);
+
+        const checkUserNameLength = min => { 
+            $msg.textContent = $input.value.length < 3 ? `닉네임은 ${min}자 이상이어야 합니다.` : ``
+        };
+
+        // 이벤트 핸들러 내부에서 함수를 호출하면서 인수를 전달
+        $input.onblur = () => {
+            checkUserNameLength(MIN_USER_NAME_LENGTH);
+        }
+    </script>
+</body>
+</html>
+```
+
+![Honeycam 2022-07-14 13-11-34](https://user-images.githubusercontent.com/97890886/179008718-cc3108a3-9760-496d-9d06-f2072718621f.gif)
+
+> 이벤트 핸들러를 반환하는 함수를 호출하면서 인수 전달하기
+> 
+
+```jsx
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>이벤트 핸들러에 인수 전달하기</title>
+</head>
+<body>
+    <label>User Name<input type="text"></label>
+    <em class="message"></em>
+    <script>
+        const MIN_USER_NAME_LENGTH = 3;    // 이름 최소 길이(상수)
+        const $input = document.querySelector(`label > input[type=text]`);
+        const $msg = document.querySelector(`em.message`);
+
+        // 이벤트 핸들러를 반환하는 함수
+        const checkUserNameLength = min => e => { 
+            $msg.textContent = $input.value.length < 3 ? `닉네임은 ${min}자 이상이어야 합니다.` : ``
+        };
+
+        // 이벤트 핸들러를 반환하는 함수 호출문(인수 포함)을 등록
+        $input.onblur = () => checkUserNameLength(MIN_USER_NAME_LENGTH);
+    </script>
+</body>
+</html>
+```
+
+다음과 같이 동작한다.
+
+```jsx
+function checkUserNameLength(min) {
+            return function handler(e) {
+                // 생략
+            }
+        }
+```
+
+checkUserNameLength 함수는 함수를 반환하는 중첩 구조로 되어있으므로, 이를 이벤트 핸들러로 등록하면 checkUserNameLength의 반환값(우리가 원하는 진짜 이벤트 핸들러 함수)이 등록된다.
+
+# 커스텀 이벤트
+
+이벤트 객체는 이벤트가 발생하면 발생한 이벤트의 종류에 따라 이벤트 타입이 자동으로 결정되어 생성되기도 하지만, 다양한 이벤트를 생성자 함수를 사용하여 개발자가 직접 생성할 수 있다. Event, UIEvent, MouseEvent 등… 이처럼 개발자가 의도적으로 만든 이벤트를 `커스텀 이벤트`라고 한다.
+
+## 커스텀 이벤트 생성
+
+### 첫 번째 인수 : 이벤트 타입 전달
+
+이벤트 생성자 함수를 사용하여 이벤트 객체를 생성할 때, 첫 번째 인수로 `이벤트 타입` 문자열을 전달받는데, 이 때 `CustomEvent 생성자 함수`를 사용하면 기존 이벤트 타입뿐만 아니라 **임의의 문자열**을 사용하여 **새로운 이벤트 타입**을 지정할 수도 있다.
+
+```jsx
+// keyboardEvent 생성자 함수로 keyup 이벤트 타입의 커스텀 이벤트 객체 생성
+const keyboardEvent = new KeyboardEvent(`keyup`);
+console.log(keyboardEvent.type);    // keyup
+
+// CustomEvent 생성자 함수로 새로운 임의의 foo 타입의 커스텀 이벤트 객체 생성
+const customEvent = new CustomEvent(`foo`); 
+console.log(customEvent.type);    // foo
+```
+
+생성된 커스텀 이벤트 객체는
+
+- 버블링되지 않는다
+- preventDefault 메서드로 취소할 수 없다
+
+```jsx
+// bubble 프로퍼티 값 false
+// cancelable 프로퍼티 값 false
+console.log(keyboardEvent.bubbles);       // F
+console.log(customEvent.cancelable);    // F
+```
+
+이를 true로 설정하려면 두 번째 인수로 이 프로퍼티들을 갖는 객체를 함께 전달하면 된다.
+
+### 두 번째 인수 : `프로퍼티` 값 지정
+
+커스텀 이벤트 객체에는 다양한 고유 프로퍼티 값(이벤트 타입에 따라 달라진다)을 지정할 수 있다. screenX/Y나 ctrlKey 등… 이처럼 이벤트 객체 고유의 프로퍼티 값을 지정할 때 생성자 함수의 두 번째 인수로 `프로퍼티`를 전달한다.
+
+```jsx
+const myEvent = new MouseEvent(`click`, {
+    bubbles: true,
+    cancelable: true
+});
+
+console.log(myEvent.bubbles);       // T
+console.log(myEvent.cancelable);    // T
+```
+
+> `isTrusted 프로퍼티`의 값은 언제나 `false`
+> 
+
+이렇게 이벤트 생성자 함수로 생성한 커스텀 이벤트는 isTrusted 프로퍼티 값이 항상 F이다. 인위적인 이벤트 말고, 원래대로 사용자의 행위에 의해 발생한 이벤트의 경우 언제나 T이다.
+
+## 커스텀 이벤트 디스패치(dispatch, 이벤트를 발생시키는 행위)
+
+> `dispatchEvent 메서드`에 이벤트 객체를 인수로 전달하면서 호출 시, 인수로 전달한 이벤트 타입의 이벤트가 발생한다.
+> 
+- 기존 이벤트 타입의 커스텀 이벤트 객체의 경우
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>커스텀 이벤트 디스패치</title>
+</head>
+<body>
+    <button class="btn">Click me!</button>
+    <script>
+        const $button = document.querySelector(`button.btn`);
+
+        // 커스텀 이벤트
+        const myEvent = new MouseEvent(`click`);
+        
+        // 커스텀 이벤트는 동기 처리 방식으로 동작
+        // 디스패치 전 이벤트 핸들러 바인딩 필수
+        $button.addEventListener(`click`, e => {
+            alert(`${e} is Clicked!`);
+            console.log(e);
+        })
+
+        // 커스텀 이벤트 대스패치
+        // -> click 이벤트 발생
+        $button.dispatchEvent(myEvent);
+    </script>
+</body>
+</html>
+```
+
+- 임의의 이벤트 타입(CustomEvent)의 커스텀 이벤트 객체의 경우
+
+```jsx
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>커스텀 이벤트 디스패치</title>
+</head>
+<body>
+    <button class="btn">Click me!</button>
+    <script>
+        const $button = document.querySelector(`button.btn`);
+
+        // 이벤트 핸들러 등록
+        // 디스패치 전 필수
+        $button.addEventListener(`foo`, e => {
+            alert(e.detail.message);
+        })
+
+        // foo 이벤트 타입의 커스텀 이벤트 객체 생성
+        const myEvent = new CustomEvent(`foo`, {
+            detail: {message: `Hello, World`}
+        });
+
+        // 커스텀 이벤트 디스패치
+        $button.dispatchEvent(myEvent);
+    </script>
+</body>
+</html>
+```
+
+두 번째 인수로 객체를 전달할 수 있는데, 여기에 e.`detail`(이벤트 객체의 프로퍼티, 이벤트와 함께 전달하고픈 정보가 담겨있음)을 담아 전달할 수 있다.
+
+또한 **addEventListener 메서드 방식만 사용 가능하다.** 이벤트 핸들러 어트리뷰트/프로퍼티 방식과 같은 “전통적인 뼈대(프로토타입 상속)”가 필요한 방식은 사용하지 못한다.
+
+> dispatchEvent 메서드는 동기(synchronous)처리 방식으로 동작한다
+> 
+
+일반적으로 이벤트 핸들러는 비동기(asynchronous)처리 방식으로 동작하지만, 이 메서드의 경우 핸들러를 동기(synchronous)처리 방식으로 호출한다. → 커스텀 이벤트에 바인딩된 이벤트 핸들러를 **직접** 호출하는 것과 동일하게 동작 → “순차적”처리이므로, **디스패치 전 이벤트 핸들러 등록은 필수다.**
